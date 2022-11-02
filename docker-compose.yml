@@ -4,11 +4,11 @@ services:
   rabbitmq:
     container_name: rabbitmq
     image: rabbitmq:3.8-management-alpine
+    domainname: rabbitmq.com
     environment:
         - RABBITMQ_DEFAULT_USER=admin
         - RABBITMQ_DEFAULT_PASS=password
-        - HOSTNAME=rabbitmq                                     
-        - RABBITMQ_NODENAME=rabbitmq 
+        - AMQP_SERVER_URL=amqp://guest:guest@rabbitmq:5672
     ports:
         # AMQP protocol port
         - '5672:5672'
@@ -17,19 +17,14 @@ services:
     volumes:
         - ./rabbitmq/log/:/var/log/rabbitmq/
 
-  # worker:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  
-  #   network_mode: host
-  #   environment:
-  #     # NOTE: Below we are using 127.0.0.1 because this container
-  #     # will run on the host network, thus it will have access to the
-  #     # host network.
-  #     # If it would not have run locally, we would have had to
-  #     # connect using the service name like following:
-  #     # amqp:rabbitmq_server:5672
-  #     rabbitmq_uri: amqp://127.0.0.1:5672
-  #   depends_on: 
-  #     - rabbitmq
+#   celery:
+#       image: calc-addition
+#       build:
+#           context: .
+#           dockerfile: ./addition/Dockerfile
+#       links:
+#           - rabbit
+#       deploy:
+#           replicas: 2
+#           restart_policy:
+#               condition: on-failure
