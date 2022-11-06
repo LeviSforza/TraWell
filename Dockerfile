@@ -5,4 +5,4 @@ ADD ./ /app/
 
 WORKDIR /app/
 RUN pip install -r requirements.txt
-ENTRYPOINT celery -A worker worker --loglevel=INFO
+# ENTRYPOINT celery -A worker worker --loglevel=INFO
