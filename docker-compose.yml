@@ -6,9 +6,10 @@ services:
     image: rabbitmq:3.8-management-alpine
     domainname: rabbitmq.com
     environment:
-        - RABBITMQ_DEFAULT_USER=admin
-        - RABBITMQ_DEFAULT_PASS=password
-        - AMQP_SERVER_URL=amqp://guest:guest@rabbitmq:5672
+      - RABBITMQ_DEFAULT_USER=root
+      - RABBITMQ_DEFAULT_PASS=root
+      - RABBITMQ_USERNAME=admin
+      - RABBITMQ_PASSWORD=admin
     ports:
         # AMQP protocol port
         - '5672:5672'
@@ -24,7 +25,8 @@ services:
     build:
         context: "./TraWell-rides"
         dockerfile: Dockerfile
-    command: bash -c "pip install -r requirements.txt && python consumer.py && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8001"
+    command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8001"
+    # image: backend-image
     volumes:
         - ./TraWell-rides:/rides
     ports:
@@ -32,6 +34,7 @@ services:
     depends_on:
         - db_rides
         - rabbitmq
+        # - worker
     networks:
         - rabbitmq_network
 
@@ -60,6 +63,8 @@ services:
     depends_on:
       - db_users
       - rabbitmq
+    networks:
+      - rabbitmq_network
 
   db_users:
     image: postgres
@@ -71,19 +76,95 @@ services:
       - POSTGRES_PASSWORD=postgres
     ports:
       - "5435:5432"
+    networks:
+      - rabbitmq_network
 
-  # queue:
-  #   build:
-  #     context: ./TraWell-rides
-  #     dockerfile: Dockerfile
-  #   container_name: web_rides_queue
-  #   command: "python consumer.py"
-  #   depends_on:
-  #     - web_rides
-  #     - web_users
-  #     - rabbitmq
-  #   networks:
-  #     - rabbitmq_network
+  worker_rides:
+    build:
+      context: "./TraWell-rides"
+      dockerfile: Dockerfile
+    # image: backend-image
+    restart: on-failure
+    command:  bash -c "celery --app rides_microservice.celery.app worker --loglevel=INFO"
+    volumes:
+        - ./TraWell-rides:/rides
+    depends_on:
+      - web_rides
+      - rabbitmq
+      - db_rides
+    networks:
+      - rabbitmq_network
+
+  worker_users:
+    build:
+      context: "./TraWell-users"
+      dockerfile: Dockerfile
+    # image: backend-image
+    restart: on-failure
+    command:  bash -c "celery --app users_service.celery.app worker --loglevel=INFO"
+    volumes:
+        - ./TraWell-users:/users
+    depends_on:
+      - web_users
+      - rabbitmq
+      - db_users
+    networks:
+      - rabbitmq_network
+
+  worker_notifications:
+    build:
+      context: ./TraWell-Notifications-Microservice/backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./TraWell-Notifications-Microservice/backend/:/backend/
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:  bash -c "celery --app app.api.server.celery worker --loglevel=INFO"
+    environment:
+      - CELERY_BROKER_URL=amqp://root:root@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=rpc://
+    env_file:
+      - ./TraWell-Notifications-Microservice/backend/app/db/migrations/env.py
+    depends_on:
+      - db_notifications
+      - web_notifications
+      - rabbitmq
+    networks:
+      - rabbitmq_network
+
+  web_notifications:
+    build:
+      context: ./TraWell-Notifications-Microservice/backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./TraWell-Notifications-Microservice/backend/:/backend/
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: uvicorn app.api.server:app --reload --workers 1 --host 0.0.0.0 --port 8000
+    environment:
+      - CELERY_BROKER_URL=amqp://root:root@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=rpc://
+    env_file:
+      - ./TraWell-Notifications-Microservice/backend/app/db/migrations/env.py
+    ports:
+      - 8000:8000
+    depends_on:
+      - db_notifications
+    networks:
+      - rabbitmq_network
+
+  db_notifications:
+    image: postgres:12.1-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    env_file:
+      - ./TraWell-Notifications-Microservice/backend/app/db/migrations/env.py
+    ports:
+      - 5437:5432
+    networks:
+      - rabbitmq_network
 
 networks:
   rabbitmq_network:
@@ -91,15 +172,3 @@ networks:
 
 volumes:
   postgres_data:
-
-#   celery:
-#       image: calc-addition
-#       build:
-#           context: .
-#           dockerfile: ./addition/Dockerfile
-#       links:
-#           - rabbit
-#       deploy:
-#           replicas: 2
-#           restart_policy:
-#               condition: on-failure
