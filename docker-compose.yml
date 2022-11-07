@@ -83,7 +83,6 @@ services:
     build:
       context: "./TraWell-rides"
       dockerfile: Dockerfile
-    # image: backend-image
     restart: on-failure
     command:  bash -c "celery --app rides_microservice.celery.app worker --loglevel=INFO"
     volumes:
@@ -99,7 +98,6 @@ services:
     build:
       context: "./TraWell-users"
       dockerfile: Dockerfile
-    # image: backend-image
     restart: on-failure
     command:  bash -c "celery --app users_service.celery.app worker --loglevel=INFO"
     volumes:
@@ -113,17 +111,12 @@ services:
 
   worker_notifications:
     build:
-      context: ./TraWell-Notifications-Microservice/backend
+      context: "./TraWell-notifications"
       dockerfile: Dockerfile
+    restart: on-failure
+    command:  bash -c "ls && celery --app notify_microservice.celery.app worker --loglevel=INFO"
     volumes:
-      - ./TraWell-Notifications-Microservice/backend/:/backend/
-      - /var/run/docker.sock:/var/run/docker.sock
-    command:  bash -c "celery --app app.api.server.celery worker --loglevel=INFO"
-    environment:
-      - CELERY_BROKER_URL=amqp://root:root@rabbitmq:5672/
-      - CELERY_RESULT_BACKEND=rpc://
-    env_file:
-      - ./TraWell-Notifications-Microservice/backend/app/db/migrations/env.py
+        - ./TraWell-notifications:/notifications
     depends_on:
       - db_notifications
       - web_notifications
@@ -133,36 +126,29 @@ services:
 
   web_notifications:
     build:
-      context: ./TraWell-Notifications-Microservice/backend
-      dockerfile: Dockerfile
+        context: ./TraWell-notifications
+        dockerfile: Dockerfile
+    command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8007"
     volumes:
-      - ./TraWell-Notifications-Microservice/backend/:/backend/
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: uvicorn app.api.server:app --reload --workers 1 --host 0.0.0.0 --port 8000
-    environment:
-      - CELERY_BROKER_URL=amqp://root:root@rabbitmq:5672/
-      - CELERY_RESULT_BACKEND=rpc://
-    env_file:
-      - ./TraWell-Notifications-Microservice/backend/app/db/migrations/env.py
+      - ./TraWell-notifications:/notifications
     ports:
-      - 8000:8000
+      - "8007:8007"
     depends_on:
       - db_notifications
+      - rabbitmq
     networks:
       - rabbitmq_network
 
   db_notifications:
-    image: postgres:12.1-alpine
+    image: postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - ./TraWell-notifications/postgres_data:/var/lib/postgresql/data/
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-    env_file:
-      - ./TraWell-Notifications-Microservice/backend/app/db/migrations/env.py
     ports:
-      - 5437:5432
+      - "5437:5432"
     networks:
       - rabbitmq_network
 
