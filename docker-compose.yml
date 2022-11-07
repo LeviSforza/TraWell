@@ -26,7 +26,6 @@ services:
         context: "./TraWell-rides"
         dockerfile: Dockerfile
     command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8001"
-    # image: backend-image
     volumes:
         - ./TraWell-rides:/rides
     ports:
@@ -34,7 +33,6 @@ services:
     depends_on:
         - db_rides
         - rabbitmq
-        # - worker
     networks:
         - rabbitmq_network
 
@@ -84,7 +82,7 @@ services:
       context: "./TraWell-rides"
       dockerfile: Dockerfile
     restart: on-failure
-    command:  bash -c "celery --app rides_microservice.celery.app worker --loglevel=INFO"
+    command:  bash -c "celery --app rides_microservice.celery.app worker --loglevel=INFO -E"
     volumes:
         - ./TraWell-rides:/rides
     depends_on:
@@ -99,7 +97,7 @@ services:
       context: "./TraWell-users"
       dockerfile: Dockerfile
     restart: on-failure
-    command:  bash -c "celery --app users_service.celery.app worker --loglevel=INFO"
+    command:  bash -c "celery --app users_service.celery.app worker --loglevel=INFO -E"
     volumes:
         - ./TraWell-users:/users
     depends_on:
