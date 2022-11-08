@@ -21,6 +21,19 @@ services:
     networks:
       - rabbitmq_network
 
+  db_rides:
+    image: postgres
+    volumes:
+      - ./TraWell-rides/postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5433:5432"
+    networks:
+      - rabbitmq_network
+
   web_rides:
     build:
         context: "./TraWell-rides"
@@ -36,16 +49,31 @@ services:
     networks:
         - rabbitmq_network
 
-  db_rides:
+  worker_rides:
+      build:
+        context: "./TraWell-rides"
+        dockerfile: Dockerfile
+      restart: on-failure
+      command:  bash -c "celery --app rides_microservice.celery.app worker --loglevel=INFO -E"
+      volumes:
+          - ./TraWell-rides:/rides
+      depends_on:
+        - web_rides
+        - rabbitmq
+        - db_rides
+      networks:
+        - rabbitmq_network
+
+  db_users:
     image: postgres
     volumes:
-      - ./TraWell-rides/postgres_data:/var/lib/postgresql/data/
+      - ./TraWell-users/postgres_data:/var/lib/postgresql/data/
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     ports:
-      - "5433:5432"
+      - "5435:5432"
     networks:
       - rabbitmq_network
 
@@ -63,35 +91,7 @@ services:
       - rabbitmq
     networks:
       - rabbitmq_network
-
-  db_users:
-    image: postgres
-    volumes:
-      - ./TraWell-users/postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5435:5432"
-    networks:
-      - rabbitmq_network
-
-  worker_rides:
-    build:
-      context: "./TraWell-rides"
-      dockerfile: Dockerfile
-    restart: on-failure
-    command:  bash -c "celery --app rides_microservice.celery.app worker --loglevel=INFO -E"
-    volumes:
-        - ./TraWell-rides:/rides
-    depends_on:
-      - web_rides
-      - rabbitmq
-      - db_rides
-    networks:
-      - rabbitmq_network
-
+ 
   worker_users:
     build:
       context: "./TraWell-users"
@@ -107,18 +107,16 @@ services:
     networks:
       - rabbitmq_network
 
-  worker_notifications:
-    build:
-      context: "./TraWell-notifications"
-      dockerfile: Dockerfile
-    restart: on-failure
-    command:  bash -c "ls && celery --app notify_microservice.celery.app worker --loglevel=INFO"
+  db_notifications:
+    image: postgres
     volumes:
-        - ./TraWell-notifications:/notifications
-    depends_on:
-      - db_notifications
-      - web_notifications
-      - rabbitmq
+      - ./TraWell-notifications/postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5437:5432"
     networks:
       - rabbitmq_network
 
@@ -137,16 +135,18 @@ services:
     networks:
       - rabbitmq_network
 
-  db_notifications:
-    image: postgres
+  worker_notifications:
+    build:
+      context: "./TraWell-notifications"
+      dockerfile: Dockerfile
+    restart: on-failure
+    command:  bash -c "celery --app notify_microservice.celery.app worker --loglevel=INFO"
     volumes:
-      - ./TraWell-notifications/postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5437:5432"
+        - ./TraWell-notifications:/notifications
+    depends_on:
+      - db_notifications
+      - web_notifications
+      - rabbitmq
     networks:
       - rabbitmq_network
 
@@ -156,3 +156,4 @@ networks:
 
 volumes:
   postgres_data:
+
