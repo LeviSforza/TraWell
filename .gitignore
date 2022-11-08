@@ -2,3 +2,8 @@
 /rabbitmq/**
 !/rabbitmq/**/
 !/rabbitmq/**/.gitkeep
+
+TraWell-rides/
+TraWell-users/
+TraWell-notifications/
+TraWell-Notifications-Microservice/
