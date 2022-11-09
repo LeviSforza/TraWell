@@ -38,6 +38,7 @@ services:
     build:
         context: "./TraWell-rides"
         dockerfile: Dockerfile
+    restart: on-failure
     command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8001"
     volumes:
         - ./TraWell-rides:/rides
@@ -46,6 +47,7 @@ services:
     depends_on:
         - db_rides
         - rabbitmq
+        # - worker_rides
     networks:
         - rabbitmq_network
 
@@ -81,6 +83,7 @@ services:
     build:
         context: ./TraWell-users
         dockerfile: Dockerfile
+    restart: on-failure
     command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8003"
     volumes:
       - ./TraWell-users:/users
@@ -89,6 +92,7 @@ services:
     depends_on:
       - db_users
       - rabbitmq
+      # - worker_users
     networks:
       - rabbitmq_network
  
@@ -124,6 +128,7 @@ services:
     build:
         context: ./TraWell-notifications
         dockerfile: Dockerfile
+    restart: on-failure
     command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8007"
     volumes:
       - ./TraWell-notifications:/notifications
@@ -132,6 +137,7 @@ services:
     depends_on:
       - db_notifications
       - rabbitmq
+      # - worker_notifications
     networks:
       - rabbitmq_network
 
