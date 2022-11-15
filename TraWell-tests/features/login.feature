@@ -13,11 +13,11 @@ Feature: Login functionality
       When I click on 'SIGN IN'
       Then I should see prompt 'Invalid username or password.'
 
-#    Scenario: Wrong password
-#      When I type 'olga@tokarczuk.com' in 'Email'
-#      And I type 'wrong_pass' in 'Password'
-#      And I click on 'SIGN IN'
-#      Then I should see prompt 'Invalid username or password.'
+    Scenario: Wrong password
+      When I type 'olga@tokarczuk.com' in 'Email'
+      And I type 'wrong_pass' in 'Password'
+      And I click on 'SIGN IN'
+      Then I should see prompt 'Invalid username or password.'
 #
 #  Scenario: Login successfully
 #    Given I have users:

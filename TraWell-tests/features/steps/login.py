@@ -11,54 +11,47 @@ from selenium.webdriver.support import expected_conditions as EC
 def i_am_on_the_login_page(context):
     context.driver.get('http://localhost:5173/')
     context.driver.implicitly_wait(4)
-    login_btn = context.driver.find_element(By.XPATH, '/html/body/div/div/div/header/div/div/nav[1]/div/button')
-    # # login_btn = context.driver.find_element_by_css_selector('#root>div>div>header>div>div>nav.css-paq9ft>div>button')
-    # login_btn.click()
-    # sleep(4)
-    # context.driver.wait(4)
 
-    print("Element is visible? " + str(login_btn.is_displayed()))
+    div_with_nav = WebDriverWait(context.driver, 10).until(EC.element_to_be_clickable(
+        (By.XPATH, '//*[@id="root"]/div/div/header/div/div')))
 
-    button = WebDriverWait(context.driver, 10).until(EC.element_to_be_clickable(
-        (By.XPATH, "/html/body/div/div/div/header/div/div/nav")))
-    button = WebDriverWait(context.driver, 10).until(EC.element_to_be_clickable(
-        (By.XPATH, "/html/body/div/div/div/header/div/div/nav[1]/div/button")))
-    button.click()
-    # ActionChains(context.driver).click(login_btn).perform()
+    login_button = div_with_nav.find_elements_by_xpath(".//*")[10]
+    login_button.click()
 
 
 @given("the field 'Email' is empty")
 def the_field_email_is_empty(context):
     context.driver.implicitly_wait(2)
-    email_field = context.driver.find_element_by_id('username')
-    assert email_field.is_empty()
+    email_field = context.driver.find_element(By.CSS_SELECTOR, 'input[name=username]')
+    email_field.clear()
 
 
 @given("the field 'Password' is empty")
 def the_field_password_is_empty(context):
     context.driver.implicitly_wait(2)
-    password_field = context.driver.find_element_by_id('password')
-    assert password_field.is_empty()
+    password_field = context.driver.find_element(By.CSS_SELECTOR, 'input[name=password]')
+    password_field.clear()
 
 
 @when("I click on 'SIGN IN'")
 def i_click_on_sign_in(context):
-    context.driver.find_element_by_xpath('//*[@id="kc-login"]').click()
+    context.driver.find_element(By.CSS_SELECTOR, 'input[type=submit][name=login]').click()
 
 
-@then("I should see prompt 'Invalid username or password.'")
-def step_impl():
-    raise NotImplementedError(u'STEP: Then I should see prompt \'Invalid username or password.\'')
+@then("I should see prompt '{message}'")
+def i_should_see_prompt(context, message):
+    error_msg = context.driver.find_element(By.XPATH, '//*[@id="input-error"]')
+    assert error_msg.text == message
 
 
 @when("I type '{email}' in 'Email'")
-def step_impl(context, email):
-    context.driver.find_element_by_id('username').send_keys(email)
+def i_type_email_in_email(context, email):
+    context.driver.find_element(By.CSS_SELECTOR, 'input[name=username]').send_keys(email)
 
 
-@given("I type '{password}' in 'Password'")
-def step_impl(context, password):
-    context.driver.find_element_by_id('password').send_keys(password)
+@when("I type '{password}' in 'Password'")
+def i_type_password_in_password(context, password):
+    context.driver.find_element(By.CSS_SELECTOR, 'input[name=password]').send_keys(password)
 
 
 @given("I have users:")

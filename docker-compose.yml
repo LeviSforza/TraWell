@@ -107,6 +107,51 @@ services:
     networks:
       - rabbitmq_network
 
+
+  db_reviews:
+    image: postgres
+    volumes:
+      - ./TraWell-reviews/postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5436:5432"
+    networks:
+      - rabbitmq_network
+
+  web_reviews:
+    build:
+      context: ./TraWell-reviews
+      dockerfile: Dockerfile
+    command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8004"
+    volumes:
+      - ./TraWell-reviews:/reviews
+    ports:
+      - "8004:8004"
+    depends_on:
+      - db_reviews
+      - rabbitmq
+    networks:
+      - rabbitmq_network
+
+  worker_reviews:
+    build:
+      context: "./TraWell-reviews"
+      dockerfile: Dockerfile
+    restart: on-failure
+    command: bash -c "celery --app reviews_service.celery.app worker --loglevel=INFO -E"
+    volumes:
+      - ./TraWell-reviews:/reviews
+    depends_on:
+      - web_reviews
+      - rabbitmq
+      - db_reviews
+    networks:
+      - rabbitmq_network
+
+
   db_notifications:
     image: postgres
     volumes:

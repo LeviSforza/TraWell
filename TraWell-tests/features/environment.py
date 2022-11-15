@@ -1,7 +1,4 @@
-import behave_webdriver
 from selenium import webdriver  # or any custom webdriver
-from behave_webdriver.driver import BehaveDriverMixin
-from webdriver_manager.chrome import ChromeDriverManager
 
 
 def before_all(context):

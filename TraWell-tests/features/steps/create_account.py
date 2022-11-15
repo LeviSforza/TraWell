@@ -125,10 +125,10 @@ def step_impl(context):
     raise NotImplementedError(u'STEP: Then I should see prompt \'Email Verification\'')
 
 
-@when(u'I type \'wrong_pass\' in \'Password\'')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: When I type \'wrong_pass\' in \'Password\'')
-
+# @when(u'I type \'wrong_pass\' in \'Password\'')
+# def step_impl(context):
+#     raise NotImplementedError(u'STEP: When I type \'wrong_pass\' in \'Password\'')
+#
 
 @given(u'I have users')
 def step_impl(context):
