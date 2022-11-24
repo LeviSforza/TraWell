@@ -38,6 +38,7 @@ services:
     build:
         context: "./TraWell-rides"
         dockerfile: Dockerfile
+    restart: on-failure
     command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8001"
     volumes:
         - ./TraWell-rides:/rides
@@ -54,7 +55,7 @@ services:
         context: "./TraWell-rides"
         dockerfile: Dockerfile
       restart: on-failure
-      command:  bash -c "celery --app rides_microservice.celery.app worker --loglevel=INFO -E"
+      command:  bash -c "celery --app rides_microservice.celery.app worker --loglevel=INFO -E -Q archive_queue"
       volumes:
           - ./TraWell-rides:/rides
       depends_on:
@@ -81,6 +82,7 @@ services:
     build:
         context: ./TraWell-users
         dockerfile: Dockerfile
+    restart: on-failure
     command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8003"
     volumes:
       - ./TraWell-users:/users
@@ -91,7 +93,7 @@ services:
       - rabbitmq
     networks:
       - rabbitmq_network
- 
+
   worker_users:
     build:
       context: "./TraWell-users"
@@ -125,6 +127,7 @@ services:
     build:
       context: ./TraWell-reviews
       dockerfile: Dockerfile
+    restart: on-failure
     command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8004"
     volumes:
       - ./TraWell-reviews:/reviews
@@ -169,6 +172,7 @@ services:
     build:
         context: ./TraWell-notifications
         dockerfile: Dockerfile
+    restart: on-failure
     command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8007"
     volumes:
       - ./TraWell-notifications:/notifications
@@ -192,6 +196,66 @@ services:
       - db_notifications
       - web_notifications
       - rabbitmq
+    networks:
+      - rabbitmq_network
+
+  db_history:
+    image: postgres
+    volumes:
+      - ./TraWell-history/postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5439:5432"
+    networks:
+      - rabbitmq_network
+
+  web_history:
+    build:
+      context: ./TraWell-history
+      dockerfile: Dockerfile
+    restart: on-failure
+    command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8002"
+    volumes:
+      - ./TraWell-history:/history
+    ports:
+      - "8002:8002"
+    depends_on:
+      - db_history
+      - rabbitmq
+    networks:
+      - rabbitmq_network
+
+  worker_history:
+    build:
+      context: "./TraWell-history"
+      dockerfile: Dockerfile
+    restart: on-failure
+    command: bash -c "celery --app history_microservice.celery.app worker --loglevel=INFO"
+    volumes:
+      - ./TraWell-history:/history
+    depends_on:
+      - db_history
+      - web_history
+      - rabbitmq
+    networks:
+      - rabbitmq_network
+
+  beat:
+    build:
+      context: "./TraWell-rides"
+      dockerfile: Dockerfile
+    restart: on-failure
+    command: bash -c "celery --app rides_microservice.celery.app beat --loglevel=INFO"
+    volumes:
+      - ./TraWell-rides:/rides
+    depends_on:
+      - db_rides
+      - web_rides
+      - rabbitmq
+      - worker_rides
     networks:
       - rabbitmq_network
 
