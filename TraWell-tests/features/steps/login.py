@@ -18,10 +18,8 @@ def i_am_on_the_login_page(context):
     context.driver.get('http://localhost:5173/')
     context.driver.implicitly_wait(4)
 
-    navbar = WebDriverWait(context.driver, 10).until(EC.element_to_be_clickable(
-        (By.XPATH, '//*[@id="root"]/div/div/header/div/div')))
-
-    login_button = navbar.find_elements(By.XPATH, ".//*")[10]
+    login_button = WebDriverWait(context.driver, 10).until(
+        EC.element_to_be_clickable((By.CSS_SELECTOR, '#login-button-desktop')))
     login_button.click()
 
 
@@ -46,7 +44,7 @@ def i_click_on_sign_in(context):
 
 @then("I should see prompt '{message}'")
 def i_should_see_prompt(context, message):
-    error_msg = context.driver.find_element(By.XPATH, '//*[@id="input-error"]')
+    error_msg = context.driver.find_element(By.CSS_SELECTOR, '#input-error')
     assert error_msg.text == message
 
 
@@ -90,11 +88,9 @@ def i_should_be_on_the_users_home_page(context):
 
 @then("I shouldn't see 'LOGIN' button in navigation bar")
 def i_shouldnt_see_login_button(context):
-    navbar = WebDriverWait(context.driver, 10).until(EC.element_to_be_clickable(
-        (By.XPATH, '//*[@id="root"]/div/div/header/div/div')))
-
     try:
-        navbar.find_element(By.CSS_SELECTOR, 'button[aria-label="Open settings"]')
+        WebDriverWait(context.driver, 10).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, '#icon-settings-desktop')))
     except NoSuchElementException:
         assert False
     assert True

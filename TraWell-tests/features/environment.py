@@ -1,11 +1,10 @@
+import logging
 import os
 
 from dotenv import load_dotenv
 from keycloak import KeycloakAdmin
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
 
 load_dotenv()
 
@@ -58,17 +57,16 @@ def after_all(context):
 
 
 def after_feature(context, feature):
-    if feature.name == 'Creating account functionality':
+    if feature.name == 'Setting up account functionality':
         user_id_keycloak = keycloak_admin.get_user_id("anna@mak.com")
         if user_id_keycloak is not None:
             keycloak_admin.delete_user(user_id=user_id_keycloak)
 
 
 def after_scenario(context, scenario):
-    if scenario.name == "Login successfully" or scenario.name == 'View profile':
-        print("Run After Each Scenario")
-        navbar = WebDriverWait(context.driver, 10).until(EC.element_to_be_clickable(
-            (By.XPATH, '//*[@id="root"]/div/div/header/div/div')))
+    try:
         # open menu
-        navbar.find_elements(By.CSS_SELECTOR, 'button[aria-label="Open settings"]')[1].click()
-        context.driver.find_elements(By.XPATH, '//*[@id="menu-appbar"]/div[3]/ul/a[4]/li')[2].click()
+        context.driver.find_element(By.CSS_SELECTOR, '#icon-settings-desktop').click()
+        context.driver.find_element(By.CSS_SELECTOR, '#logout-desktop-button').click()
+    except Exception:
+        logging.warning("Logging out not completed!")

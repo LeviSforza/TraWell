@@ -1,6 +1,6 @@
 
 Feature: User profile functionality
-    As a customer
+    As a TraWell user
     In order to manage my data
     I want to have access to my user profile
 

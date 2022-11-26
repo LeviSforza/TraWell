@@ -1,6 +1,6 @@
 
 Feature: Setting up account functionality
-    As a customer
+    As a guest
     In order to use all functionalities of the TraWell application
     I want to create user account
 

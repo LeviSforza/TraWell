@@ -1,6 +1,6 @@
 
 Feature: Logout functionality
-    As a customer
+    As an app user
     In order to guarantee safety of my personal data
     I want to logout from TraWell application
 

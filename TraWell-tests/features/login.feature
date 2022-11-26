@@ -1,7 +1,7 @@
 
 Feature: Login functionality
-    As a customer
-    In order to use the TraWell application
+    As a guest
+    In order to use all functionalities of the TraWell application
     I want to login with email and password
 
     Background:
