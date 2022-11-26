@@ -4,9 +4,11 @@
 !/rabbitmq/**/.gitkeep
 
 TraWell-rides/
+TraWell-reviews/
 TraWell-users/
 TraWell-notifications/
 TraWell-Notifications-Microservice/
 
 .idea/
+TraWell-tests/.idea/
 
