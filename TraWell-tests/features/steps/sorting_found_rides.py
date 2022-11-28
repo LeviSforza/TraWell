@@ -48,24 +48,24 @@ def step_impl(context, order):
 @then(u'I should see rides sorted by {parameter} - {order}')
 def step_impl(context, parameter, order):
     rides = context.driver.find_elements(By.CSS_SELECTOR, "div[class*=css-l0b0zb]")
-    dates = []
+    rides_params = []
     for ride in rides:
         if parameter == 'date':
-            ride_date = ride.find_elements(By.TAG_NAME, 'h4')[0]
-            date = datetime.datetime.strptime(ride_date.text, "%d.%m.%Y").date()
+            ride_elem = ride.find_elements(By.TAG_NAME, 'h4')[0]
+            param = datetime.datetime.strptime(ride_elem.text, "%d.%m.%Y").date()
         elif parameter == 'duration':
             ride_duration = ride.find_elements(By.TAG_NAME, 'span')[0]
-            date = datetime.datetime.strptime(ride_duration.text, "%Hh %M min").time()
+            param = datetime.datetime.strptime(ride_duration.text, "%Hh %M min").time()
         elif parameter == 'price':
             ride_duration = ride.find_elements(By.TAG_NAME, 'span')[2]
-            date = float(ride_duration.text[:-2])
+            param = float(ride_duration.text[:-2])
         else:
             ride_duration = ride.find_elements(By.TAG_NAME, 'span')[1]
-            date = ride_duration.text[0]
-        dates.append(date)
+            param = ride_duration.text[0]
+        rides_params.append(param)
 
     if order == 'decreasing':
-        assert dates == sorted(dates, reverse=True)
+        assert rides_params == sorted(rides_params, reverse=True)
     else:
-        assert dates == sorted(dates)
+        assert rides_params == sorted(rides_params)
 
