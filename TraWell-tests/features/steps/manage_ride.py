@@ -1,4 +1,4 @@
-
+import logging
 import os
 from pathlib import Path
 from time import sleep
@@ -20,12 +20,15 @@ from selenium.webdriver.support import expected_conditions as EC
 def step_impl(context):
     context.driver.get('http://localhost:5173/')
     context.driver.implicitly_wait(4)
-    login_button = WebDriverWait(context.driver, 10).until(
-        EC.element_to_be_clickable((By.CSS_SELECTOR, '#login-button-desktop')))
-    login_button.click()
-    context.driver.find_element(By.CSS_SELECTOR, 'input[name=username]').send_keys("olga@tokarczuk.com")
-    context.driver.find_element(By.CSS_SELECTOR, 'input[name=password]').send_keys("correct_pass")
-    context.driver.find_element(By.CSS_SELECTOR, 'input[type=submit][name=login]').click()
+    try:
+        login_button = WebDriverWait(context.driver, 3).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, '#login-button-desktop')))
+        login_button.click()
+        context.driver.find_element(By.CSS_SELECTOR, 'input[name=username]').send_keys("olga@tokarczuk.com")
+        context.driver.find_element(By.CSS_SELECTOR, 'input[name=password]').send_keys("correct_pass")
+        context.driver.find_element(By.CSS_SELECTOR, 'input[type=submit][name=login]').click()
+    except Exception:
+        logging.warn('User already logged in')
 
 
 @when(u'I chosen "Post a ride" from navigation bar')
@@ -42,7 +45,7 @@ def step_impl(context):
 def step_impl(context, content):
     input_field = context.driver.find_element(By.CSS_SELECTOR, '#place-from-autocomplete')
     input_field.send_keys(content[:4])
-    sleep(3)
+    sleep(2)
     elems = context.driver.find_elements(By.CSS_SELECTOR, "li")
     for e in elems:
         if e.text.startswith(content[:4]):
@@ -54,7 +57,7 @@ def step_impl(context, content):
 def step_impl(context, content):
     input_field = context.driver.find_element(By.CSS_SELECTOR, '#place-to-autocomplete')
     input_field.send_keys(content[:4])
-    sleep(3)
+    sleep(2)
     elems = context.driver.find_elements(By.CSS_SELECTOR, "li")
     for e in elems:
         if e.text.startswith(content[:4]):
@@ -109,6 +112,13 @@ def step_impl(context, content):
     input_field.send_keys(content)
 
 
+@when(u'I input "{content}" as amount of people')
+def step_impl(context, content):
+    input_field = context.driver.find_element(By.CSS_SELECTOR, '#amount-of-people-input')
+    input_field.clear()
+    input_field.send_keys(content)
+
+
 @when(u'I input "{content}" as Price for the ride')
 def step_impl(context, content):
     input_field = context.driver.find_element(By.XPATH, '/html/body/div[1]/div/div/div/div/div[4]/div[2]/div/div/input')
@@ -118,23 +128,28 @@ def step_impl(context, content):
 
 @when(u'I choose first vehicle from list')
 def step_impl(context):
-    input_field = context.driver.find_element(By.CSS_SELECTOR, '#choose-vehicle-dropdown>input')
-    context.driver.execute_script("arguments[0].scrollIntoView();", input_field)
+    context.driver.execute_script("arguments[0].scrollIntoView();",
+                                  context.driver.find_element(By.CSS_SELECTOR, '#exact-place-to'))
+    input_field = context.driver.find_element(By.CSS_SELECTOR, '#choose-vehicle-dropdown')
+    sleep(4)
     input_field.click()
-    context.driver.find_element(By.XPATH, '//*[@id="menu-"]/div[3]/ul/li[1]').click()
+    menu = context.driver.find_element(By.CSS_SELECTOR, '#menu-')
+    menu.find_elements(By.TAG_NAME, 'li')[0].click()
 
 
 @when(u'I click on "ADD RIDE" button')
 def step_impl(context):
+    context.driver.execute_script("arguments[0].scrollIntoView();", context.driver.find_element(By.CSS_SELECTOR, "#add-singular-ride"))
     element = context.driver.find_element(By.CSS_SELECTOR, "#add-singular-ride")
+    sleep(2)
     element.click()
 
 
 @when(u'I click on recurrent "ADD RIDE" button')
 def step_impl(context):
     element = context.driver.find_element(By.CSS_SELECTOR, "#add-ride-button")
+    context.driver.execute_script("arguments[0].scrollIntoView();", element)
     element.click()
-
 
 
 @then(u'I should see "{title}" modal')
@@ -144,12 +159,13 @@ def step_impl(context, title):
 
 @when(u'I click on "OKAY" button')
 def step_impl(context):
-    context.driver.find_element(By.CSS_SELECTOR, "#medium-primary-button")
+    context.driver.find_element(By.CSS_SELECTOR, "#medium-primary-button").click()
 
 
 @then(u'I should be on home page')
 def step_impl(context):
-    assert context.driver.current == "http://localhost:5173"
+    assert context.driver.current_url == "http://localhost:5173/"
+    assert context.driver.find_element(By.XPATH, '//*[@id="root"]/div/div/div/div/div[1]/h2').text == 'Find a ride'
 
 
 @when(u'I input "{place}" as Exact place from')
@@ -176,33 +192,6 @@ def step_impl(context, minutes):
     input_field.send_keys(minutes)
 
 
-@when(u'I tick description on')
-def step_impl(context):
-    tick_btn = context.driver.find_element(By.XPATH, '//*[@id="root"]/div/div/div/div/div[6]/div/div/div/span/span[1]/input')
-    context.driver.execute_script("arguments[0].scrollIntoView();", context.driver.find_element(By.CSS_SELECTOR, '#add-singular-ride'))
-    context.driver.execute_script("arguments[0].setAttribute('class','MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary Mui-checked PrivateSwitchBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary Mui-checked Mui-checked css-i3qvqk-MuiButtonBase-root-MuiSwitch-switchBase')", tick_btn)
-
-
-@when(u'I tick on description button')
-def step_impl(context):
-    tick_btn = context.driver.find_element(By.XPATH, '//*[@id="root"]/div/div/div/div/div[5]/div/div[1]/div/span/span[1]')
-    context.driver.execute_script("arguments[0].scrollIntoView();", context.driver.find_element(By.CSS_SELECTOR, '#add-singular-ride'))
-    # tick_btn.click()
-    context.driver.execute_script("arguments[0].setAttribute('class','MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary Mui-checked PrivateSwitchBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary Mui-checked Mui-checked css-i3qvqk-MuiButtonBase-root-MuiSwitch-switchBase')", tick_btn)
-
-
-@when(u'I input "{description}" as Description')
-def step_impl(context, description):
-    input_field = context.driver.find_element(By.CSS_SELECTOR, '#description')
-    input_field.send_keys(description)
-
-
-@when(u'I tick road map on')
-def step_impl(context):
-    tick_btn = context.driver.find_element(By.XPATH, '/html/body/div[1]/div/div/div/div/div[6]/div/div[1]/div/span/span[1]')
-    tick_btn.click()
-
-
 @when(u'I input "{date}" as End date of the ride')
 def step_impl(context, date):
     input_field = context.driver.find_element(By.CSS_SELECTOR, '#end-date-selector')
@@ -212,14 +201,26 @@ def step_impl(context, date):
 @when(u'I input "{number}" as Frequence')
 def step_impl(context, number):
     input_field = context.driver.find_element(By.CSS_SELECTOR, '#frequence-input')
+    input_field.clear()
     input_field.send_keys(number)
 
 
 @when(u'I choose "{frequency}" as Frequency type')
 def step_impl(context, frequency):
-    input_field = context.driver.find_element(By.XPATH, '//*[@id="root"]/div/div/div/div/div[4]/div/div[3]/div/div[1]/form/div/div')
-    input_field.find_element(By.CSS_SELECTOR, "div").click()
-    input_field.send_keys(frequency.lower())
+    input_field = context.driver.find_elements(By.CSS_SELECTOR, 'div[role="button"]')[1]
+    context.driver.execute_script("arguments[0].scrollIntoView();", input_field)
+    sleep(2)
+    input_field.click()
+
+    selectors = context.driver.find_elements(By.CSS_SELECTOR, '#frequence-type-selector')
+    if frequency == 'Hourly':
+        selectors[0].click()
+    if frequency == 'Daily':
+        selectors[1].click()
+    if frequency == 'Weekly':
+        selectors[2].click()
+    if frequency == 'Monthly':
+        selectors[3].click()
 
 
 @given(u'I chosen "Post a ride" from navigation bar')
