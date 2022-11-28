@@ -9,16 +9,6 @@ Feature: Filtering rides functionality
 
 
     Scenario: Filtering by start date
-      When I input "27.11.2022" into Start Date field
-      Then I should see only rides with later start date
-
-
-    Scenario: Filtering by place from
-      When I input "Czastary" as place from
-      Then I should see only rides from "Czastary"
-
-
-    Scenario: Filtering by place to
-      When I input "Wroclaw" as place to
-      Then I should see only rides to "Wrocław"
+      When I input "30.11.2022" as Start Date field
+      Then I should see rides with later start date
 

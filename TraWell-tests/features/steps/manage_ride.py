@@ -149,6 +149,7 @@ def step_impl(context):
 def step_impl(context):
     element = context.driver.find_element(By.CSS_SELECTOR, "#add-ride-button")
     context.driver.execute_script("arguments[0].scrollIntoView();", element)
+    sleep(2)
     element.click()
 
 

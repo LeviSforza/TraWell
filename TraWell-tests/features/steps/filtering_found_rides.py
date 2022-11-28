@@ -18,7 +18,7 @@ def step_impl(context):
     input_field = context.driver.find_element(By.XPATH,
                                               '/html/body/div/div/div/div/div/div[1]/div[1]/div[1]/div/div/input')
     input_field.send_keys("Kato")
-    context.driver.implicitly_wait(4)
+    sleep(2)
     elems = context.driver.find_elements(By.CSS_SELECTOR, "li")
     for e in elems:
         if e.text.startswith("Kato"):
@@ -29,7 +29,7 @@ def step_impl(context):
     input_field = context.driver.find_element(By.XPATH,
                                               '/html/body/div/div/div/div/div/div[1]/div[1]/div[2]/div/div/input')
     input_field.send_keys("Wroc")
-    context.driver.implicitly_wait(4)
+    sleep(2)
     elems = context.driver.find_elements(By.CSS_SELECTOR, "li")
     for e in elems:
         if e.text.startswith("Wroc"):

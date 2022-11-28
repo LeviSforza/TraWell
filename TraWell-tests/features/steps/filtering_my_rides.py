@@ -19,23 +19,24 @@ from models.search import Search
 @given(u'I chosen "My rides" from navigation bar')
 def step_impl(context):
     context.driver.find_element(By.CSS_SELECTOR, '#my-rides-desktop').click()
+    context.search = Search()
 
 
-@when(u'I input "Czastary" as place from')
+@when(u'I input "{date}" as Start Date field')
+def step_impl(context, date):
+    input_field = context.driver.find_element(By.CSS_SELECTOR, 'input[placeholder="dd/mm/yyyy"]')
+    ActionChains(context.driver).click(input_field).key_down(Keys.CONTROL).send_keys(
+        "a").key_up(Keys.CONTROL).send_keys(date).perform()
+    context.search.date = date
+
+
+@then(u'I should see rides with later start date')
 def step_impl(context):
-    raise NotImplementedError(u'STEP: When I input "Czastary" as place from')
+    rides = context.driver.find_elements_by_css_selector("div[class*=css-109v0wb")
+    for ride in rides:
+        ride_params = ride.find_elements(By.TAG_NAME, 'h4')
 
+        date_ride = datetime.datetime.strptime(ride_params[1].text, "%d.%m.%Y").date()
+        date_filter = datetime.datetime.strptime(context.search.date, "%d.%m.%Y").date()
+        assert date_ride >= date_filter
 
-@then(u'I should see only rides from "Czastary"')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: Then I should see only rides from "Czastary"')
-
-
-@when(u'I input "Wroclaw" as place to')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: When I input "Wroclaw" as place to')
-
-
-@then(u'I should see only rides to "Wrocław"')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: Then I should see only rides to "Wrocław"')
