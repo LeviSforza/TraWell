@@ -18,7 +18,7 @@ Feature: Filtering rides found during search functionality
 
 
     Scenario: Filtering by min price
-      When I input 10 as min price
+      When I input 10.55 as min price
       Then I should see only rides with higher price
 
 

@@ -26,9 +26,10 @@ Feature: Setting up account functionality
 
     Scenario: Error on incorrect password confirmation
       Given I am on register page
-      When I type "123" in Password field
-      When I type "abc" in Password-Confirm field
-     When I click on "Register" button
+      When I type "anna@mak.com" in Email field
+      And I type "123" in Password field
+      And I type "abc" in Password-Confirm field
+      And I click on "Register" button
       Then I should see "Password confirmation doesn't match." under "Confirm password"
 
 
