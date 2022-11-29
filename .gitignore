@@ -4,6 +4,7 @@
 !/rabbitmq/**/.gitkeep
 
 TraWell-rides/
+TraWell-history/
 TraWell-reviews/
 TraWell-users/
 TraWell-notifications/
@@ -12,3 +13,6 @@ TraWell-Notifications-Microservice/
 .idea/
 TraWell-tests/.idea/
 
+
+./__pycache__/
+__pycache__/
