@@ -2,8 +2,6 @@ import datetime
 
 from behave import *
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
 
 
 @then(u'I should see my rides sorted by {parameter} {order}')

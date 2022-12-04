@@ -3,8 +3,10 @@ import os
 
 from dotenv import load_dotenv
 from keycloak import KeycloakAdmin
-from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+
 
 load_dotenv()
 
@@ -20,7 +22,7 @@ def before_all(context):
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     options.add_argument("--window-size=2560,1440")
 
-    context.driver = webdriver.Chrome(executable_path=r'.\drivers\chromedriver.exe', options=options)
+    context.driver = webdriver.Chrome(executable_path=r'C:\\Users\\mgalinsk\OneDrive - Capgemini\\Documents\\GitHub\\TraWell-RabbitMQ\\TraWell-tests\\drivers\\chromedriver.exe', options=options)
     context.driver.maximize_window()
     context.driver.implicitly_wait(2)
 
@@ -45,6 +47,26 @@ def before_all(context):
                 "instagram": "https://www.instagram.com/"
             }
         })
+        user_id_keycloak = keycloak_admin.get_user_id("anna@sowa.com")
+        if user_id_keycloak is None:
+            new_user = keycloak_admin.create_user({
+                "email": "anna@sowa.com",
+                "username": "anna@sowa.com",
+                "enabled": True,
+                "emailVerified": True,
+                "firstName": "Anna",
+                "lastName": "Sowa",
+                "credentials": [{
+                    "value": "correct_pass",
+                    "type": "password",
+                }],
+                "attributes": {
+                    "user_type": "Private User",
+                    "date_of_birth": "1996-12-12",
+                    "facebook": "https://www.instagram.com/",
+                    "instagram": "https://www.instagram.com/"
+                }
+            })
 
 
 def after_all(context):
@@ -52,6 +74,9 @@ def after_all(context):
     context.driver.quit()
 
     user_id_keycloak = keycloak_admin.get_user_id("olga@tokarczuk.com")
+    if user_id_keycloak is not None:
+        keycloak_admin.delete_user(user_id=user_id_keycloak)
+    user_id_keycloak = keycloak_admin.get_user_id("anna@sowa.com")
     if user_id_keycloak is not None:
         keycloak_admin.delete_user(user_id=user_id_keycloak)
 

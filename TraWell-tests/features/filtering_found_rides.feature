@@ -13,7 +13,8 @@ Feature: Filtering rides found during search functionality
 
 
     Scenario: Filtering by start time
-      When I input "16:00" into Start Time field
+      When I input "20.12.2022" into Start Date field
+      And I input "16:00" into Start Time field
       Then I should see only rides with later start time
 
 

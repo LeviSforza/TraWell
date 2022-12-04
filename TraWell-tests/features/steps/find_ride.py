@@ -1,3 +1,5 @@
+from time import sleep
+
 from behave import *
 from models.search import Search
 from selenium.webdriver import ActionChains
@@ -21,7 +23,7 @@ def step_impl(context):
 def step_impl(context, content):
     input_field = context.driver.find_element(By.XPATH, '/html/body/div/div/div/div/div/div[1]/div[1]/div[1]/div/div/input')
     input_field.send_keys(content[:4])
-    context.driver.implicitly_wait(4)
+    sleep(2)
     elems = context.driver.find_elements(By.CSS_SELECTOR, "li")
     for e in elems:
         if e.text.startswith(content[:4]):
@@ -34,7 +36,7 @@ def step_impl(context, content):
 def step_impl(context, content):
     input_field = context.driver.find_element(By.XPATH, '/html/body/div/div/div/div/div/div[1]/div[1]/div[2]/div/div/input')
     input_field.send_keys(content[:4])
-    context.driver.implicitly_wait(4)
+    sleep(2)
     elems = context.driver.find_elements(By.CSS_SELECTOR, "li")
     for e in elems:
         if e.text.startswith(content[:4]):
