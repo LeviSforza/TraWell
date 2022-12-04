@@ -259,6 +259,52 @@ services:
     networks:
       - rabbitmq_network
 
+  db_keycloak:
+      image: postgres:latest
+      user: root
+      ports:
+        - "5432:5432"
+      volumes:
+        - ./TraWell-KrakenD/postgres_data:/var/lib/postgresql/data
+      environment:
+        POSTGRES_DB: keycloak
+        POSTGRES_USER: keycloak
+        POSTGRES_PASSWORD: password
+  web_keycloak:
+      image: jboss/keycloak:16.1.1
+      ports:
+        - "8403:8080"
+      environment:
+        DB_VENDOR: POSTGRES
+        DB_ADDR: postgres_data
+        DB_DATABASE: keycloak
+        DB_USER: keycloak
+        DB_PASSWORD: password
+        DB_SCHEMA: public
+        DB_PORT: 5432
+        KEYCLOAK_IMPORT: /tmp/config/keycloak/realms/trawell.json
+        KEYCLOAK_FEATURES: 'declarative_user_profile'
+        JAVA_OPTS_APPEND: "-Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.profile.feature.declarative_user_profile=enabled"
+      volumes:
+      - type: bind
+        source: ./TraWell-KrakenD/config/keycloak/realms
+        target: /tmp/config/keycloak/realms
+      - type: bind
+        source: ./TraWell-KrakenD/themes/custom
+        target: /opt/jboss/keycloak/themes/custom
+      depends_on:
+        - db_keycloak
+      restart: always
+
+  krakend:
+      image: devopsfaith/krakend:latest
+      command: run -d -c /etc/krakend/krakend.json
+      ports:
+        - "9000:9000"
+      volumes:
+        - ./TraWell-KrakenD/gateway:/etc/krakend
+
+
 networks:
   rabbitmq_network:
     driver: bridge
