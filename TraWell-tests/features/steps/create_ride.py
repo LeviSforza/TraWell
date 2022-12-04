@@ -1,19 +1,10 @@
 import logging
-import os
-from pathlib import Path
 from time import sleep
 
 from behave import *
-from dotenv import load_dotenv
-from keycloak import KeycloakAdmin
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.select import Select
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 
 
 @given(u'I am logged in TraWell as private user')

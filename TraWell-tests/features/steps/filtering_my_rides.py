@@ -1,19 +1,10 @@
 import datetime
-import os
-from pathlib import Path
-from time import sleep
 
 from behave import *
-from dotenv import load_dotenv
-from keycloak import KeycloakAdmin
-from selenium.common.exceptions import NoSuchElementException
+from models.search import Search
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from datetime import datetime as dt
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
-from models.search import Search
 
 
 @given(u'I chosen "My rides" from navigation bar')

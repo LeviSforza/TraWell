@@ -5,7 +5,7 @@ from models.ride import RideDetails
 from selenium.webdriver.common.by import By
 
 
-@when(u'I click on "{tab_name}" button')
+@when(u'I click on "{tab_name}" tab')
 def step_impl(context, tab_name):
     context.ride = RideDetails()
     tabs = context.driver.find_elements(By.CSS_SELECTOR, 'button[role="tab"]')

@@ -74,9 +74,21 @@ def step_impl(context):
         for ride in rides:
             ride_params = ride.find_elements(By.TAG_NAME, 'h4')
 
-            time_ride = datetime.datetime.strptime(ride_params[1].text, "%H:%M").time()
-            time_filter = datetime.datetime.strptime(context.search.time, "%H:%M").time()
-            assert time_ride >= time_filter
+            date_ride = datetime.datetime.strptime(ride_params[0].text, "%d.%m.%Y").date()
+            date_filter = datetime.datetime.strptime(context.search.date, "%d.%m.%Y").date()
+
+            hours = ride_params[1].text.split(":")[0]
+            minutes = ride_params[1].text.split(":")[1]
+            time_ride = int(hours) * 60 + int(minutes)
+
+            hours = context.search.time.split(":")[0]
+            minutes = context.search.time.split(":")[1]
+            time_filter = int(hours) * 60 + int(minutes)
+
+            if date_ride == date_filter:
+                assert time_ride >= time_filter
+            else:
+                assert True
     except Exception:
         assert False
 

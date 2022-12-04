@@ -55,7 +55,10 @@ def step_impl(context, parameter, order):
             param = datetime.datetime.strptime(ride_elem.text, "%d.%m.%Y").date()
         elif parameter == 'duration':
             ride_duration = ride.find_elements(By.TAG_NAME, 'span')[0]
-            param = datetime.datetime.strptime(ride_duration.text, "%Hh %M min").time()
+            hours = ride_duration.text.split("h")[0]
+            minutes = ride_duration.text.split(" ")[1]
+            print(f'hours: {hours} and minutes: {minutes}')
+            param = int(hours) * 60 + int(minutes)
         elif parameter == 'price':
             ride_duration = ride.find_elements(By.TAG_NAME, 'span')[2]
             param = float(ride_duration.text[:-2])
