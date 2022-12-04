@@ -270,7 +270,12 @@ services:
         POSTGRES_DB: keycloak
         POSTGRES_USER: keycloak
         POSTGRES_PASSWORD: password
+      networks:
+        - rabbitmq_network
   web_keycloak:
+      build:
+        context: "./TraWell-KrakenD"
+        dockerfile: Dockerfile
       image: jboss/keycloak:16.1.1
       ports:
         - "8403:8080"
@@ -294,15 +299,20 @@ services:
         target: /opt/jboss/keycloak/themes/custom
       depends_on:
         - db_keycloak
-      restart: always
-
+      networks:
+        - rabbitmq_network
   krakend:
+      build:
+        context: "./TraWell-KrakenD"
+        dockerfile: Dockerfile
       image: devopsfaith/krakend:latest
       command: run -d -c /etc/krakend/krakend.json
       ports:
         - "9000:9000"
       volumes:
         - ./TraWell-KrakenD/gateway:/etc/krakend
+      networks:
+        - rabbitmq_network
 
 
 networks:
