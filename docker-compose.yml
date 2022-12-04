@@ -260,6 +260,7 @@ services:
       - rabbitmq_network
 
   db_keycloak:
+      container_name: db_keycloak
       image: postgres:latest
       user: root
       ports:
@@ -270,8 +271,6 @@ services:
         POSTGRES_DB: keycloak
         POSTGRES_USER: keycloak
         POSTGRES_PASSWORD: password
-      networks:
-        - rabbitmq_network
   web_keycloak:
       build:
         context: "./TraWell-KrakenD"
@@ -281,7 +280,7 @@ services:
         - "8403:8080"
       environment:
         DB_VENDOR: POSTGRES
-        DB_ADDR: postgres_data
+        DB_ADDR: db_keycloak
         DB_DATABASE: keycloak
         DB_USER: keycloak
         DB_PASSWORD: password
@@ -299,8 +298,6 @@ services:
         target: /opt/jboss/keycloak/themes/custom
       depends_on:
         - db_keycloak
-      networks:
-        - rabbitmq_network
   krakend:
       build:
         context: "./TraWell-KrakenD"
@@ -311,9 +308,6 @@ services:
         - "9000:9000"
       volumes:
         - ./TraWell-KrakenD/gateway:/etc/krakend
-      networks:
-        - rabbitmq_network
-
 
 networks:
   rabbitmq_network:
