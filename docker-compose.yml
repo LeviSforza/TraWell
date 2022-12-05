@@ -11,13 +11,13 @@ services:
       - RABBITMQ_USERNAME=admin
       - RABBITMQ_PASSWORD=admin
     ports:
-        # AMQP protocol port
-        - '5672:5672'
-        # HTTP management UI
-        - '15672:15672'
+      # AMQP protocol port
+      - '5672:5672'
+      # HTTP management UI
+      - '15672:15672'
     volumes:
-        - ./rabbitmq/log/:/var/log/rabbitmq/
-        - ./rabbitmq/data/:/var/lib/rabbitmq/
+      - ./rabbitmq/log/:/var/log/rabbitmq/
+      - ./rabbitmq/data/:/var/lib/rabbitmq/
     networks:
       - rabbitmq_network
 
@@ -36,34 +36,34 @@ services:
 
   web_rides:
     build:
-        context: "./TraWell-rides"
-        dockerfile: Dockerfile
+      context: "./TraWell-rides"
+      dockerfile: Dockerfile
     restart: on-failure
     command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8001"
     volumes:
-        - ./TraWell-rides:/rides
+      - ./TraWell-rides:/rides
     ports:
-        - "8001:8001"
+      - "8001:8001"
     depends_on:
-        - db_rides
-        - rabbitmq
+      - db_rides
+      - rabbitmq
     networks:
-        - rabbitmq_network
+      - rabbitmq_network
 
   worker_rides:
-      build:
-        context: "./TraWell-rides"
-        dockerfile: Dockerfile
-      restart: on-failure
-      command:  bash -c "celery --app rides_microservice.celery.app worker --loglevel=INFO -E -Q archive_queue"
-      volumes:
-          - ./TraWell-rides:/rides
-      depends_on:
-        - web_rides
-        - rabbitmq
-        - db_rides
-      networks:
-        - rabbitmq_network
+    build:
+      context: "./TraWell-rides"
+      dockerfile: Dockerfile
+    restart: on-failure
+    command: bash -c "celery --app rides_microservice.celery.app worker --loglevel=INFO -E -Q archive_queue"
+    volumes:
+      - ./TraWell-rides:/rides
+    depends_on:
+      - web_rides
+      - rabbitmq
+      - db_rides
+    networks:
+      - rabbitmq_network
 
   db_users:
     image: postgres
@@ -80,8 +80,8 @@ services:
 
   web_users:
     build:
-        context: ./TraWell-users
-        dockerfile: Dockerfile
+      context: ./TraWell-users
+      dockerfile: Dockerfile
     restart: on-failure
     command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8003"
     volumes:
@@ -99,9 +99,9 @@ services:
       context: "./TraWell-users"
       dockerfile: Dockerfile
     restart: on-failure
-    command:  bash -c "celery --app users_service.celery.app worker --loglevel=INFO -E"
+    command: bash -c "celery --app users_service.celery.app worker --loglevel=INFO -E"
     volumes:
-        - ./TraWell-users:/users
+      - ./TraWell-users:/users
     depends_on:
       - web_users
       - rabbitmq
@@ -170,8 +170,8 @@ services:
 
   web_notifications:
     build:
-        context: ./TraWell-notifications
-        dockerfile: Dockerfile
+      context: ./TraWell-notifications
+      dockerfile: Dockerfile
     restart: on-failure
     command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8007"
     volumes:
@@ -189,9 +189,9 @@ services:
       context: "./TraWell-notifications"
       dockerfile: Dockerfile
     restart: on-failure
-    command:  bash -c "celery --app notify_microservice.celery.app worker --loglevel=INFO"
+    command: bash -c "celery --app notify_microservice.celery.app worker --loglevel=INFO"
     volumes:
-        - ./TraWell-notifications:/notifications
+      - ./TraWell-notifications:/notifications
     depends_on:
       - db_notifications
       - web_notifications
@@ -259,6 +259,7 @@ services:
     networks:
       - rabbitmq_network
 
+<<<<<<< Updated upstream
   db_keycloak:
       container_name: db_keycloak
       image: postgres:latest
@@ -304,6 +305,16 @@ services:
         - "9000:9000"
       volumes:
         - ./TraWell-KrakenD/gateway:/etc/krakend
+=======
+  osm_names_proxy:
+    build:
+      context: "./osmnames-proxy"
+      dockerfile: Dockerfile
+    restart: on-failure
+    volumes:
+      - ./osmnames-proxy:/code
+    command: bash -c "uvicorn main:app --reload --port 5000"
+>>>>>>> Stashed changes
 
 networks:
   rabbitmq_network:
