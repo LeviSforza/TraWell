@@ -1,8 +1,8 @@
 
-Feature: Using tabs in my ride functionality
+Feature: Using tabs in history
     As a TraWell user
-    In order to manage my rides
-    I want to view my rides and their details
+    In order to manage history of my past rides
+    I want to view history of my past rides and their details
 
     Background:
       Given I am logged in TraWell as private user
